@@ -25,6 +25,50 @@ class VideoTransitionMode(str, Enum):
     fade_out = "FadeOut"
     slide_in = "SlideIn"
     slide_out = "SlideOut"
+    # ffmpeg xfade transitions (applied between clips, not per-clip)
+    xfade_fade = "xfade:fade"
+    xfade_dissolve = "xfade:dissolve"
+    xfade_circlecrop = "xfade:circlecrop"
+    xfade_pixelize = "xfade:pixelize"
+    xfade_radial = "xfade:radial"
+    xfade_smoothleft = "xfade:smoothleft"
+    xfade_smoothright = "xfade:smoothright"
+    xfade_smoothup = "xfade:smoothup"
+    xfade_smoothdown = "xfade:smoothdown"
+    xfade_circleclose = "xfade:circleclose"
+    xfade_circleopen = "xfade:circleopen"
+    xfade_horzclose = "xfade:horzclose"
+    xfade_horzopen = "xfade:horzopen"
+    xfade_vertclose = "xfade:vertclose"
+    xfade_vertopen = "xfade:vertopen"
+    xfade_diagbl = "xfade:diagbl"
+    xfade_diagbr = "xfade:diagbr"
+    xfade_diagtl = "xfade:diagtl"
+    xfade_diagtr = "xfade:diagtr"
+    xfade_hlslice = "xfade:hlslice"
+    xfade_hrslice = "xfade:hrslice"
+    xfade_vuslice = "xfade:vuslice"
+    xfade_vdslice = "xfade:vdslice"
+    xfade_hblur = "xfade:hblur"
+    xfade_wipetl = "xfade:wipetl"
+    xfade_wipetr = "xfade:wipetr"
+    xfade_wipebl = "xfade:wipebl"
+    xfade_wipebr = "xfade:wipebr"
+    xfade_zoomin = "xfade:zoomin"
+    xfade_hlwind = "xfade:hlwind"
+    xfade_hrwind = "xfade:hrwind"
+    xfade_vuwind = "xfade:vuwind"
+    xfade_vdwind = "xfade:vdwind"
+    xfade_coverleft = "xfade:coverleft"
+    xfade_coverright = "xfade:coverright"
+    xfade_covertop = "xfade:covertop"
+    xfade_coverbottom = "xfade:coverbottom"
+    xfade_revealleft = "xfade:revealleft"
+    xfade_revealright = "xfade:revealright"
+    xfade_revealup = "xfade:revealup"
+    xfade_revealdown = "xfade:revealdown"
+    xfade_rectcrop = "xfade:rectcrop"
+    xfade_shuffle = "xfade:shuffle"  # random xfade effect per join
 
 
 class VideoAspect(str, Enum):
@@ -81,6 +125,18 @@ class VideoParams(BaseModel):
     video_materials: Optional[List[MaterialInfo]] = (
         None  # Materials used to generate the video
     )
+
+    # Stable Diffusion image generation settings (used when video_source="sd")
+    sd_server: Optional[str] = ""  # e.g. http://127.0.0.1:7860
+    sd_steps: Optional[int] = 20
+    sd_cfg_scale: Optional[float] = 7.0
+    sd_sampler: Optional[str] = "Euler a"
+    sd_negative_prompt: Optional[str] = "ugly, blurry, low quality"
+
+    # YouTube upload settings
+    youtube_upload: Optional[bool] = False
+    youtube_privacy: Optional[str] = "private"
+    youtube_category: Optional[str] = "28"
     
     custom_audio_file: Optional[str] = None  # Custom audio file path, will ignore video_script and disable subtitle
     video_language: Optional[str] = ""  # auto detect

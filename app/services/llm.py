@@ -74,6 +74,30 @@ def _generate_response(prompt: str) -> str:
                 base_url = config.app.get("deepseek_base_url")
                 if not base_url:
                     base_url = "https://api.deepseek.com"
+            elif llm_provider == "baichuan":
+                api_key = config.app.get("baichuan_api_key")
+                model_name = config.app.get("baichuan_model_name")
+                base_url = config.app.get("baichuan_base_url", "")
+                if not base_url:
+                    base_url = "https://api.baichuan-ai.com/v1"
+            elif llm_provider == "tongyi":
+                api_key = config.app.get("tongyi_api_key")
+                model_name = config.app.get("tongyi_model_name")
+                base_url = config.app.get("tongyi_base_url", "")
+                if not base_url:
+                    base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+            elif llm_provider == "qianfan":
+                api_key = config.app.get("qianfan_api_key")
+                model_name = config.app.get("qianfan_model_name")
+                base_url = config.app.get("qianfan_base_url", "")
+                if not base_url:
+                    base_url = "https://qianfan.baidubce.com/v2"
+            elif llm_provider == "kimi":
+                api_key = config.app.get("kimi_api_key")
+                model_name = config.app.get("kimi_model_name")
+                base_url = config.app.get("kimi_base_url", "")
+                if not base_url:
+                    base_url = "https://api.moonshot.cn/v1"
             elif llm_provider == "modelscope":
                 api_key = config.app.get("modelscope_api_key")
                 model_name = config.app.get("modelscope_model_name")

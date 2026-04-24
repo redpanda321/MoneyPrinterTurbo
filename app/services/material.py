@@ -1,3 +1,4 @@
+import base64
 import os
 import random
 from typing import List
@@ -194,6 +195,90 @@ def save_video(video_url: str, save_dir: str = "") -> str:
     return ""
 
 
+def generate_sd_images(
+    search_terms: List[str],
+    video_aspect: VideoAspect = VideoAspect.portrait,
+    save_dir: str = "",
+    sd_server: str = "",
+    sd_steps: int = 20,
+    sd_cfg_scale: float = 7.0,
+    sd_sampler: str = "Euler a",
+    sd_negative_prompt: str = "ugly, blurry, low quality",
+) -> List[str]:
+    """
+    使用Stable Diffusion WebUI API生成图片
+
+    Args:
+        search_terms: 搜索词列表，每个词作为生成提示
+        video_aspect: 视频宽高比
+        save_dir: 保存目录
+        sd_server: SD WebUI服务器地址，如 http://127.0.0.1:7860
+        sd_steps: 采样步数
+        sd_cfg_scale: CFG Scale
+        sd_sampler: 采样器名称
+        sd_negative_prompt: 反向提示词
+
+    Returns:
+        生成的图片文件路径列表
+    """
+    if not sd_server:
+        sd_server = config.app.get("sd_server", "")
+    if not sd_server:
+        logger.error("Stable Diffusion server URL not configured")
+        return []
+
+    sd_server = sd_server.rstrip("/")
+    aspect = VideoAspect(video_aspect)
+    width, height = aspect.to_resolution()
+
+    if not save_dir:
+        save_dir = utils.storage_dir("cache_videos")
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    image_paths = []
+    for idx, term in enumerate(search_terms):
+        try:
+            logger.info(f"generating SD image {idx + 1}/{len(search_terms)}: {term}")
+            payload = {
+                "prompt": term,
+                "negative_prompt": sd_negative_prompt,
+                "width": width,
+                "height": height,
+                "steps": sd_steps,
+                "sampler_name": sd_sampler,
+                "cfg_scale": sd_cfg_scale,
+                "seed": -1,
+            }
+            resp = requests.post(
+                f"{sd_server}/sdapi/v1/txt2img",
+                json=payload,
+                timeout=120,
+            )
+            resp.raise_for_status()
+            result = resp.json()
+
+            images = result.get("images", [])
+            if not images:
+                logger.warning(f"SD returned no images for: {term}")
+                continue
+
+            # 保存第一张图片
+            img_data = base64.b64decode(images[0])
+            img_hash = utils.md5(term + str(idx))
+            img_path = os.path.join(save_dir, f"sd-{img_hash}.png")
+            with open(img_path, "wb") as f:
+                f.write(img_data)
+            image_paths.append(img_path)
+            logger.info(f"SD image saved: {img_path}")
+
+        except Exception as e:
+            logger.error(f"SD image generation failed for '{term}': {str(e)}")
+
+    logger.success(f"generated {len(image_paths)} SD images")
+    return image_paths
+
+
 def download_videos(
     task_id: str,
     search_terms: List[str],
@@ -206,6 +291,37 @@ def download_videos(
     valid_video_items = []
     valid_video_urls = []
     found_duration = 0.0
+
+    # SD source: generate images and convert to static video clips
+    if source == "sd":
+        from moviepy import ImageClip
+
+        material_directory = config.app.get("material_directory", "").strip()
+        if material_directory == "task":
+            material_directory = utils.task_dir(task_id)
+        elif material_directory and not os.path.isdir(material_directory):
+            material_directory = ""
+
+        sd_server = config.app.get("sd_server", "")
+        image_paths = generate_sd_images(
+            search_terms,
+            video_aspect=video_aspect,
+            save_dir=material_directory,
+            sd_server=sd_server,
+        )
+        video_paths = []
+        for img_path in image_paths:
+            try:
+                # 将静态图片转换为5秒视频片段
+                clip_path = img_path.replace(".png", ".mp4")
+                clip = ImageClip(img_path).with_duration(max_clip_duration)
+                clip.write_videofile(clip_path, fps=24, logger=None)
+                clip.close()
+                video_paths.append(clip_path)
+            except Exception as e:
+                logger.error(f"failed to convert SD image to video: {str(e)}")
+        return video_paths
+
     search_videos = search_videos_pexels
     if source == "pixabay":
         search_videos = search_videos_pixabay

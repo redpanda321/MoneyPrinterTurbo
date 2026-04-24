@@ -151,6 +151,11 @@ def generate_subtitle(task_id, params, video_script, sub_maker, audio_file):
         logger.info("\n\n## correcting subtitle")
         subtitle.correct(subtitle_file=subtitle_path, video_script=video_script)
 
+    if subtitle_provider == "sensevoice":
+        subtitle.create_sensevoice(audio_file=audio_file, subtitle_file=subtitle_path)
+        logger.info("\n\n## correcting subtitle")
+        subtitle.correct(subtitle_file=subtitle_path, video_script=video_script)
+
     subtitle_lines = subtitle.file_to_subtitles(subtitle_path)
     if not subtitle_lines:
         logger.warning(f"subtitle file is invalid: {subtitle_path}")
@@ -348,6 +353,24 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.success(
         f"task {task_id} finished, generated {len(final_video_paths)} videos."
     )
+
+    # 7. Optional YouTube upload
+    if getattr(params, "youtube_upload", False):
+        from app.services.youtube_upload import upload_to_youtube
+
+        for video_path in final_video_paths:
+            try:
+                video_url = upload_to_youtube(
+                    video_path=video_path,
+                    title=params.video_subject[:100],
+                    description=video_script[:5000] if video_script else "",
+                    category=getattr(params, "youtube_category", "28"),
+                    privacy=getattr(params, "youtube_privacy", "private"),
+                )
+                if video_url:
+                    logger.success(f"uploaded to YouTube: {video_url}")
+            except Exception as e:
+                logger.error(f"YouTube upload failed: {str(e)}")
 
     kwargs = {
         "videos": final_video_paths,

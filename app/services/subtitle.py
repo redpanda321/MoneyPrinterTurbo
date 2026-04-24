@@ -284,6 +284,107 @@ def correct(subtitle_file, video_script):
         logger.success("Subtitle is correct")
 
 
+def create_sensevoice(audio_file, subtitle_file: str = ""):
+    """
+    使用SenseVoice（sherpa-onnx）进行语音识别并生成字幕
+
+    需要安装: pip install sherpa-onnx
+    模型会自动下载到 models/sensevoice 目录
+
+    Args:
+        audio_file: 输入的音频文件路径
+        subtitle_file: 输出的字幕文件路径
+    """
+    try:
+        import sherpa_onnx
+    except ImportError:
+        logger.error(
+            "sherpa-onnx not installed. Install it with: pip install sherpa-onnx"
+        )
+        return ""
+
+    logger.info(f"start sensevoice, output file: {subtitle_file}")
+    if not subtitle_file:
+        subtitle_file = f"{audio_file}.srt"
+
+    # 预处理音频为16kHz单声道PCM
+    import subprocess
+    import tempfile
+
+    wav_file = tempfile.mktemp(suffix=".wav")
+    try:
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", audio_file,
+                "-ar", "16000", "-ac", "1", "-f", "wav", wav_file,
+            ],
+            capture_output=True, timeout=60, check=True,
+        )
+    except Exception as e:
+        logger.error(f"ffmpeg preprocessing failed: {str(e)}")
+        return ""
+
+    try:
+        # 使用SenseVoice模型
+        model_dir = f"{utils.root_dir()}/models/sensevoice"
+
+        recognizer = sherpa_onnx.OfflineRecognizer.from_sense_voice(
+            model=f"{model_dir}/model.onnx" if os.path.isdir(model_dir) else "",
+            tokens=f"{model_dir}/tokens.txt" if os.path.isdir(model_dir) else "",
+            use_itn=True,
+            num_threads=4,
+        )
+
+        # 读取音频
+        wave = sherpa_onnx.read_wave(wav_file)
+        stream = recognizer.create_stream()
+        stream.accept_waveform(wave.sample_rate, wave.samples)
+        recognizer.decode_stream(stream)
+
+        text = stream.result.text.strip()
+        if not text:
+            logger.warning("SenseVoice returned empty result")
+            return ""
+
+        # SenseVoice不提供word-level时间戳，使用整个音频长度作为一个字幕段
+        # 然后按标点分割，均匀分配时间
+        import wave as wave_mod
+
+        with wave_mod.open(wav_file, "rb") as wf:
+            audio_duration = wf.getnframes() / wf.getframerate()
+
+        lines = utils.split_string_by_punctuations(text)
+        if not lines:
+            lines = [text]
+
+        total_chars = sum(len(l) for l in lines)
+        char_duration = audio_duration / total_chars if total_chars > 0 else 0
+
+        srt_lines = []
+        current_time = 0.0
+        for idx, line in enumerate(lines, 1):
+            line = line.strip()
+            if not line:
+                continue
+            seg_duration = len(line) * char_duration
+            srt_lines.append(
+                utils.text_to_srt(idx, line, current_time, current_time + seg_duration)
+            )
+            current_time += seg_duration
+
+        sub = "\n".join(srt_lines) + "\n"
+        with open(subtitle_file, "w", encoding="utf-8") as f:
+            f.write(sub)
+        logger.info(f"sensevoice subtitle file created: {subtitle_file}")
+
+    except Exception as e:
+        logger.error(f"SenseVoice recognition failed: {str(e)}")
+        return ""
+    finally:
+        if os.path.exists(wav_file):
+            os.remove(wav_file)
+
+
 if __name__ == "__main__":
     task_id = "c12fd1e6-4b0a-4d65-a075-c87abe35a072"
     task_dir = utils.task_dir(task_id)

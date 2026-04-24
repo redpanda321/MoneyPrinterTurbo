@@ -1106,6 +1106,191 @@ def is_azure_v2_voice(voice_name: str):
     return ""
 
 
+def get_tiktok_voices() -> list[str]:
+    """
+    获取TikTok TTS的声音列表
+
+    Returns:
+        声音列表，格式为 ["tiktok:en_us_001-English US Female 1", ...]
+    """
+    voices = {
+        # Disney / Character
+        "en_us_ghostface": "Ghost Face",
+        "en_us_chewbacca": "Chewbacca",
+        "en_us_c3po": "C3PO",
+        "en_us_stitch": "Stitch",
+        "en_us_stormtrooper": "Stormtrooper",
+        "en_us_rocket": "Rocket",
+        # English
+        "en_au_001": "English AU Female",
+        "en_au_002": "English AU Male",
+        "en_uk_001": "English UK Male 1",
+        "en_uk_003": "English UK Male 2",
+        "en_us_001": "English US Female 1",
+        "en_us_002": "English US Female 2",
+        "en_us_006": "English US Male 1",
+        "en_us_007": "English US Male 2",
+        "en_us_009": "English US Male 3",
+        "en_us_010": "English US Male 4",
+        # Europe
+        "fr_001": "French Male 1",
+        "fr_002": "French Male 2",
+        "de_001": "German Female",
+        "de_002": "German Male",
+        "es_002": "Spanish Male",
+        # Americas
+        "es_mx_002": "Spanish MX Male",
+        "br_001": "Portuguese BR Female 1",
+        "br_003": "Portuguese BR Female 2",
+        "br_004": "Portuguese BR Female 3",
+        "br_005": "Portuguese BR Male",
+        # Asia
+        "id_001": "Indonesian Female",
+        "jp_001": "Japanese Female 1",
+        "jp_003": "Japanese Female 2",
+        "jp_005": "Japanese Female 3",
+        "jp_006": "Japanese Male",
+        "kr_002": "Korean Male 1",
+        "kr_003": "Korean Female",
+        "kr_004": "Korean Male 2",
+        # Singing
+        "en_female_f08_salut_damour": "Alto",
+        "en_male_m03_lobby": "Tenor",
+        "en_female_f08_warmy_breeze": "Warmy Breeze",
+        "en_male_m03_sunshine_soon": "Sunshine Soon",
+        # Other
+        "en_male_narration": "Narrator",
+        "en_male_funny": "Wacky",
+        "en_female_emotional": "Peaceful",
+    }
+    return [f"tiktok:{vid}-{label}" for vid, label in voices.items()]
+
+
+def is_tiktok_voice(voice_name: str):
+    """检查是否是TikTok TTS的声音"""
+    return voice_name.startswith("tiktok:")
+
+
+def get_ali_voices() -> list[str]:
+    """
+    获取阿里云NLS TTS的声音列表
+
+    Returns:
+        声音列表，格式为 ["ali:xiaoyun-中文女声", ...]
+    """
+    voices = {
+        # 中文女声
+        "xiaoyun": "中文女声-小云",
+        "xiaogang": "中文男声-小刚",
+        "ruoxi": "中文女声-若兮",
+        "siqi": "中文女声-思琪",
+        "sijia": "中文女声-思佳",
+        "sicheng": "中文男声-思诚",
+        "aiqi": "中文女声-艾琪",
+        "aijia": "中文女声-艾佳",
+        "aichu": "中文女声-艾楚",
+        "aida": "中文男声-艾达",
+        "ninger": "中文女声-宁儿",
+        "ruilin": "中文女声-瑞琳",
+        "siyue": "中文女声-思悦",
+        "aiya": "中文女声-艾雅",
+        "aimei": "中文女声-艾美",
+        "aiyu": "中文女声-艾雨",
+        "aiyue": "中文女声-艾悦",
+        "aijing": "中文女声-艾婧",
+        "xiaomei": "中文女声-小美",
+        "aina": "中文女声-艾娜",
+        "yina": "中文女声-伊娜",
+        "sijing": "中文女声-思婧",
+        "sitong": "中文童声-童童",
+        "xiaobei": "中文女声-小北",
+        "aitong": "中文童声-艾彤",
+        "aiwei": "中文男声-艾威",
+        "aibao": "中文男声-艾宝",
+        # 英文
+        "harry": "English Male",
+        "abby": "English Female",
+        "andy": "English Male 2",
+        "eric": "English Male 3",
+        "emily": "English Female 2",
+        "luna": "English Female 3",
+        # 日韩
+        "tomoka": "Japanese Female",
+        "tomoya": "Japanese Male",
+        "yoomi": "Korean Female",
+    }
+    return [f"ali:{vid}-{label}" for vid, label in voices.items()]
+
+
+def is_ali_voice(voice_name: str):
+    """检查是否是阿里云NLS TTS的声音"""
+    return voice_name.startswith("ali:")
+
+
+def get_tencent_voices() -> list[str]:
+    """
+    获取腾讯云TTS的声音列表
+
+    Returns:
+        声音列表，格式为 ["tencent:1001-智瑜", ...]
+    """
+    voices = {
+        "1001": "智瑜-中文女声",
+        "1002": "智聆-中文女声",
+        "1003": "智美-中文女声",
+        "1004": "智云-中文男声",
+        "1005": "智莉-中文女声",
+        "1007": "智娜-中文女声",
+        "1008": "智琪-中文女声",
+        "1009": "智芸-中文女声",
+        "1010": "智华-中文男声",
+        "1017": "智蓉-中文女声",
+        "1018": "智靖-中文男声",
+        "1050": "WeJack-English Male",
+        "1051": "WeRose-English Female",
+    }
+    return [f"tencent:{vid}-{label}" for vid, label in voices.items()]
+
+
+def is_tencent_voice(voice_name: str):
+    """检查是否是腾讯云TTS的声音"""
+    return voice_name.startswith("tencent:")
+
+
+def get_chattts_voices() -> list[str]:
+    """获取ChatTTS声音列表"""
+    return ["chattts:default-ChatTTS Default"]
+
+
+def is_chattts_voice(voice_name: str):
+    """检查是否是ChatTTS的声音"""
+    return voice_name.startswith("chattts:")
+
+
+def get_gptsovits_voices() -> list[str]:
+    """获取GPT-SoVITS声音列表"""
+    return ["gptsovits:default-GPT-SoVITS Default"]
+
+
+def is_gptsovits_voice(voice_name: str):
+    """检查是否是GPT-SoVITS的声音"""
+    return voice_name.startswith("gptsovits:")
+
+
+def get_cosyvoice_voices() -> list[str]:
+    """获取CosyVoice声音列表"""
+    voices = [
+        "中文女", "中文男", "日语男", "粤语女",
+        "英文女", "英文男", "韩语女",
+    ]
+    return [f"cosyvoice:{v}-CosyVoice {v}" for v in voices]
+
+
+def is_cosyvoice_voice(voice_name: str):
+    """检查是否是CosyVoice的声音"""
+    return voice_name.startswith("cosyvoice:")
+
+
 def is_siliconflow_voice(voice_name: str):
     """检查是否是硅基流动的声音"""
     return voice_name.startswith("siliconflow:")
@@ -1125,6 +1310,46 @@ def tts(
 ) -> Union[SubMaker, None]:
     if is_azure_v2_voice(voice_name):
         return azure_tts_v2(text, voice_name, voice_file)
+    elif is_tiktok_voice(voice_name):
+        # 格式: tiktok:voice_id-Label
+        parts = voice_name.split(":")
+        if len(parts) >= 2:
+            voice_id = parts[1].split("-")[0]
+            return tiktok_tts(text, voice_id, voice_rate, voice_file, voice_volume)
+        else:
+            logger.error(f"Invalid tiktok voice name format: {voice_name}")
+            return None
+    elif is_ali_voice(voice_name):
+        # 格式: ali:voice_id-Label
+        parts = voice_name.split(":")
+        if len(parts) >= 2:
+            voice_id = parts[1].split("-")[0]
+            return ali_tts(text, voice_id, voice_rate, voice_file, voice_volume)
+        else:
+            logger.error(f"Invalid ali voice name format: {voice_name}")
+            return None
+    elif is_tencent_voice(voice_name):
+        # 格式: tencent:voice_type-Label
+        parts = voice_name.split(":")
+        if len(parts) >= 2:
+            voice_type = parts[1].split("-")[0]
+            return tencent_tts(text, voice_type, voice_rate, voice_file, voice_volume)
+        else:
+            logger.error(f"Invalid tencent voice name format: {voice_name}")
+            return None
+    elif is_chattts_voice(voice_name):
+        return chattts_tts(text, voice_file, voice_volume)
+    elif is_gptsovits_voice(voice_name):
+        return gptsovits_tts(text, voice_file, voice_volume)
+    elif is_cosyvoice_voice(voice_name):
+        # 格式: cosyvoice:voice_name-Label
+        parts = voice_name.split(":")
+        if len(parts) >= 2:
+            voice = parts[1].split("-")[0]
+            return cosyvoice_tts(text, voice, voice_file, voice_volume)
+        else:
+            logger.error(f"Invalid cosyvoice voice name format: {voice_name}")
+            return None
     elif is_siliconflow_voice(voice_name):
         # 从voice_name中提取模型和声音
         # 格式: siliconflow:model:voice-Gender
@@ -1432,6 +1657,495 @@ def azure_tts_v2(text: str, voice_name: str, voice_file: str) -> Union[SubMaker,
             logger.info(f"completed, output file: {voice_file}")
         except Exception as e:
             logger.error(f"failed, error: {str(e)}")
+    return None
+
+
+def ali_tts(
+    text: str,
+    voice: str,
+    voice_rate: float,
+    voice_file: str,
+    voice_volume: float = 1.0,
+) -> Union[SubMaker, None]:
+    """
+    使用阿里云NLS TTS生成语音
+
+    需要配置: ali_access_key_id, ali_access_key_secret, ali_app_key
+    使用REST API而非WebSocket，简化实现
+
+    Returns:
+        None（需要whisper生成字幕）
+    """
+    import base64
+    import hmac
+    import hashlib
+    import uuid
+    import time
+    from urllib.parse import quote
+
+    access_key_id = config.app.get("ali_access_key_id", "")
+    access_key_secret = config.app.get("ali_access_key_secret", "")
+    app_key = config.app.get("ali_app_key", "")
+
+    if not access_key_id or not access_key_secret or not app_key:
+        logger.error("Alibaba Cloud NLS: access_key_id, access_key_secret, or app_key not set")
+        return None
+
+    text = text.strip()
+    if not text:
+        return None
+
+    # 获取Token
+    def _get_token():
+        timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        params = {
+            "AccessKeyId": access_key_id,
+            "Action": "CreateToken",
+            "Format": "JSON",
+            "RegionId": "cn-shanghai",
+            "SignatureMethod": "HMAC-SHA1",
+            "SignatureNonce": str(uuid.uuid4()),
+            "SignatureVersion": "1.0",
+            "Timestamp": timestamp,
+            "Version": "2019-02-28",
+        }
+        sorted_params = sorted(params.items())
+        query_string = "&".join(f"{quote(k, safe='')}={quote(v, safe='')}" for k, v in sorted_params)
+        string_to_sign = f"GET&{quote('/', safe='')}&{quote(query_string, safe='')}"
+        sign_key = (access_key_secret + "&").encode("utf-8")
+        signature = base64.b64encode(
+            hmac.new(sign_key, string_to_sign.encode("utf-8"), hashlib.sha1).digest()
+        ).decode("utf-8")
+        params["Signature"] = signature
+        resp = requests.get("https://nls-meta.cn-shanghai.aliyuncs.com/", params=params, timeout=30)
+        resp.raise_for_status()
+        result = resp.json()
+        return result.get("Token", {}).get("Id", "")
+
+    for attempt in range(3):
+        try:
+            logger.info(f"start ali tts, voice: {voice}, try: {attempt + 1}")
+            token = _get_token()
+            if not token:
+                raise ValueError("Failed to obtain Alibaba Cloud NLS token")
+
+            # 使用REST API
+            url = "https://nls-gateway-cn-shanghai.aliyuncs.com/stream/v1/tts"
+            # 语速转换：voice_rate 1.0 = 正常, 映射到 [-500, 500]
+            speech_rate = int((voice_rate - 1.0) * 500)
+            speech_rate = max(-500, min(500, speech_rate))
+
+            headers = {
+                "Content-Type": "application/json",
+                "X-NLS-Token": token,
+            }
+            payload = {
+                "appkey": app_key,
+                "text": text,
+                "voice": voice,
+                "format": "mp3",
+                "sample_rate": 16000,
+                "speech_rate": speech_rate,
+            }
+
+            resp = requests.post(url, headers=headers, json=payload, timeout=60)
+            content_type = resp.headers.get("Content-Type", "")
+            if "audio" in content_type or resp.status_code == 200 and len(resp.content) > 1000:
+                with open(voice_file, "wb") as f:
+                    f.write(resp.content)
+                logger.success(f"ali tts succeeded: {voice_file}")
+                return None
+            else:
+                raise ValueError(f"Ali NLS returned error: {resp.text[:200]}")
+
+        except Exception as e:
+            logger.error(f"ali tts failed: {str(e)}")
+
+    return None
+
+
+def tencent_tts(
+    text: str,
+    voice_type: str,
+    voice_rate: float,
+    voice_file: str,
+    voice_volume: float = 1.0,
+) -> Union[SubMaker, None]:
+    """
+    使用腾讯云TTS生成语音
+
+    需要配置: tencent_secret_id, tencent_secret_key
+    使用REST API直接请求
+
+    Returns:
+        None（需要whisper生成字幕）
+    """
+    import base64 as b64
+    import hmac
+    import hashlib
+    import json
+    import time
+
+    secret_id = config.app.get("tencent_secret_id", "")
+    secret_key = config.app.get("tencent_secret_key", "")
+
+    if not secret_id or not secret_key:
+        logger.error("Tencent Cloud TTS: secret_id or secret_key not set")
+        return None
+
+    text = text.strip()
+    if not text:
+        return None
+
+    # 语速转换：voice_rate 1.0 = 正常(0), 映射到 [-2, 6]的整数
+    speed = max(-2, min(6, int((voice_rate - 1.0) * 5)))
+
+    def _sign_request(payload_str: str, action: str):
+        """生成腾讯云API v3签名"""
+        service = "tts"
+        host = "tts.tencentcloudapi.com"
+        timestamp = int(time.time())
+        date = time.strftime("%Y-%m-%d", time.gmtime(timestamp))
+
+        # CanonicalRequest
+        canonical_request = (
+            f"POST\n/\n\ncontent-type:application/json\nhost:{host}\n\n"
+            f"content-type;host\n{hashlib.sha256(payload_str.encode('utf-8')).hexdigest()}"
+        )
+        # StringToSign
+        credential_scope = f"{date}/{service}/tc3_request"
+        string_to_sign = (
+            f"TC3-HMAC-SHA256\n{timestamp}\n{credential_scope}\n"
+            f"{hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()}"
+        )
+        # Signature
+        def _hmac_sha256(key, msg):
+            return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
+
+        secret_date = _hmac_sha256(("TC3" + secret_key).encode("utf-8"), date)
+        secret_service = _hmac_sha256(secret_date, service)
+        secret_signing = _hmac_sha256(secret_service, "tc3_request")
+        signature = hmac.new(
+            secret_signing, string_to_sign.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+
+        authorization = (
+            f"TC3-HMAC-SHA256 Credential={secret_id}/{credential_scope}, "
+            f"SignedHeaders=content-type;host, Signature={signature}"
+        )
+        return {
+            "Authorization": authorization,
+            "Content-Type": "application/json",
+            "Host": host,
+            "X-TC-Action": action,
+            "X-TC-Timestamp": str(timestamp),
+            "X-TC-Version": "2019-08-23",
+        }
+
+    for attempt in range(3):
+        try:
+            logger.info(f"start tencent tts, voice: {voice_type}, try: {attempt + 1}")
+
+            payload = {
+                "Text": text,
+                "SessionId": str(int(time.time() * 1000)),
+                "VoiceType": int(voice_type),
+                "Codec": "mp3",
+                "Speed": speed,
+                "Volume": max(0, min(10, int(voice_volume * 5))),
+            }
+            payload_str = json.dumps(payload)
+            headers = _sign_request(payload_str, "TextToVoice")
+
+            resp = requests.post(
+                "https://tts.tencentcloudapi.com",
+                headers=headers,
+                data=payload_str,
+                timeout=60,
+            )
+            result = resp.json()
+
+            if "Response" in result and "Audio" in result["Response"]:
+                audio_data = b64.b64decode(result["Response"]["Audio"])
+                with open(voice_file, "wb") as f:
+                    f.write(audio_data)
+                logger.success(f"tencent tts succeeded: {voice_file}")
+                return None
+            else:
+                error_msg = result.get("Response", {}).get("Error", {}).get("Message", "Unknown error")
+                raise ValueError(f"Tencent TTS error: {error_msg}")
+
+        except Exception as e:
+            logger.error(f"tencent tts failed: {str(e)}")
+
+    return None
+
+
+def chattts_tts(
+    text: str,
+    voice_file: str,
+    voice_volume: float = 1.0,
+) -> Union[SubMaker, None]:
+    """
+    使用本地ChatTTS服务器生成语音
+
+    需要配置: chattts_server (默认 http://127.0.0.1:8080)
+
+    Returns:
+        None（需要whisper生成字幕）
+    """
+    import zipfile
+    import io
+
+    server = config.app.get("chattts_server", "http://127.0.0.1:8080").rstrip("/")
+    text = text.strip()
+    if not text:
+        return None
+
+    for attempt in range(3):
+        try:
+            logger.info(f"start chattts tts, try: {attempt + 1}")
+
+            payload = {
+                "text": [text],
+                "stream": False,
+                "lang": None,
+                "skip_refine_text": False,
+                "refine_text_only": False,
+                "use_decoder": True,
+                "audio_seed": 42,
+                "text_seed": 42,
+                "do_text_normalization": True,
+                "do_homophone_replacement": False,
+            }
+            resp = requests.post(
+                f"{server}/generate_voice",
+                json=payload,
+                timeout=120,
+            )
+            resp.raise_for_status()
+
+            # ChatTTS返回ZIP格式
+            content_type = resp.headers.get("Content-Type", "")
+            if "zip" in content_type or resp.content[:2] == b"PK":
+                with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+                    audio_files = [n for n in zf.namelist() if n.endswith((".mp3", ".wav"))]
+                    if audio_files:
+                        audio_data = zf.read(audio_files[0])
+                        with open(voice_file, "wb") as f:
+                            f.write(audio_data)
+                        logger.success(f"chattts tts succeeded: {voice_file}")
+                        return None
+                    raise ValueError("No audio files found in ChatTTS ZIP response")
+            else:
+                # 直接是音频数据
+                with open(voice_file, "wb") as f:
+                    f.write(resp.content)
+                logger.success(f"chattts tts succeeded: {voice_file}")
+                return None
+
+        except Exception as e:
+            logger.error(f"chattts tts failed: {str(e)}")
+
+    return None
+
+
+def gptsovits_tts(
+    text: str,
+    voice_file: str,
+    voice_volume: float = 1.0,
+) -> Union[SubMaker, None]:
+    """
+    使用本地GPT-SoVITS服务器生成语音
+
+    需要配置: gptsovits_server (默认 http://127.0.0.1:9880)
+
+    Returns:
+        None（需要whisper生成字幕）
+    """
+    server = config.app.get("gptsovits_server", "http://127.0.0.1:9880").rstrip("/")
+    text = text.strip()
+    if not text:
+        return None
+
+    for attempt in range(3):
+        try:
+            logger.info(f"start gptsovits tts, try: {attempt + 1}")
+
+            payload = {
+                "text": text,
+                "text_language": "zh",
+            }
+            resp = requests.post(server, json=payload, timeout=120)
+            resp.raise_for_status()
+
+            with open(voice_file, "wb") as f:
+                f.write(resp.content)
+            logger.success(f"gptsovits tts succeeded: {voice_file}")
+            return None
+
+        except Exception as e:
+            logger.error(f"gptsovits tts failed: {str(e)}")
+
+    return None
+
+
+def cosyvoice_tts(
+    text: str,
+    voice: str,
+    voice_file: str,
+    voice_volume: float = 1.0,
+) -> Union[SubMaker, None]:
+    """
+    使用本地CosyVoice服务器生成语音
+
+    需要配置: cosyvoice_server
+
+    Returns:
+        None（需要whisper生成字幕）
+    """
+    server = config.app.get("cosyvoice_server", "").rstrip("/")
+    if not server:
+        logger.error("CosyVoice server URL not configured")
+        return None
+
+    text = text.strip()
+    if not text:
+        return None
+
+    for attempt in range(3):
+        try:
+            logger.info(f"start cosyvoice tts, voice: {voice}, try: {attempt + 1}")
+
+            payload = {
+                "mode": "sft",
+                "tts_text": text,
+                "sft_dropdown": voice,
+            }
+            resp = requests.post(f"{server}/text-tts", json=payload, timeout=120)
+            resp.raise_for_status()
+
+            with open(voice_file, "wb") as f:
+                f.write(resp.content)
+            logger.success(f"cosyvoice tts succeeded: {voice_file}")
+            return None
+
+        except Exception as e:
+            logger.error(f"cosyvoice tts failed: {str(e)}")
+
+    return None
+
+
+def tiktok_tts(
+    text: str,
+    voice_id: str,
+    voice_rate: float,
+    voice_file: str,
+    voice_volume: float = 1.0,
+) -> Union[SubMaker, None]:
+    """
+    使用TikTok TTS生成语音（免费，无需API key）
+
+    Args:
+        text: 要转换为语音的文本
+        voice_id: TikTok voice ID，如 "en_us_001"
+        voice_rate: 语音速度（当前未使用，TikTok API不支持）
+        voice_file: 输出的音频文件路径
+        voice_volume: 语音音量（当前未使用）
+
+    Returns:
+        None（TikTok TTS不提供word-level时间戳，需要whisper生成字幕）
+    """
+    import base64
+
+    TIKTOK_ENDPOINTS = [
+        "https://tiktok-tts.weilnet.workers.dev/api/generation",
+        "https://tiktoktts.com/api/tiktok-tts",
+    ]
+    CHUNK_LIMIT = 300
+
+    def _split_text(s: str, limit: int) -> list[str]:
+        """按词边界拆分文本，每段不超过limit字符"""
+        words = s.split()
+        chunks = []
+        current = ""
+        for word in words:
+            if len(current) + len(word) + 1 <= limit:
+                current += f" {word}" if current else word
+            else:
+                if current:
+                    chunks.append(current)
+                current = word
+        if current:
+            chunks.append(current)
+        return chunks if chunks else [s[:limit]]
+
+    def _call_endpoint(endpoint_url: str, chunk: str, voice: str) -> str:
+        """调用TikTok TTS端点并返回base64音频数据"""
+        headers = {"Content-Type": "application/json"}
+        data = {"text": chunk, "voice": voice}
+        resp = requests.post(endpoint_url, headers=headers, json=data, timeout=30)
+        resp.raise_for_status()
+        result = resp.json()
+        # 两个端点的响应格式略有不同
+        if "data" in result:
+            return result["data"]
+        elif "audioUrl" in result:
+            # 第二个端点可能返回base64 data URI
+            audio_str = result["audioUrl"]
+            if "," in audio_str:
+                return audio_str.split(",", 1)[1]
+            return audio_str
+        raise ValueError(f"Unexpected response format from {endpoint_url}")
+
+    text = text.strip()
+    if not text:
+        logger.error("TikTok TTS: empty text")
+        return None
+
+    for attempt in range(3):
+        try:
+            logger.info(f"start tiktok tts, voice: {voice_id}, try: {attempt + 1}")
+
+            # 选择可用的端点
+            endpoint = None
+            for ep in TIKTOK_ENDPOINTS:
+                try:
+                    base_url = ep.split("/api")[0] if "/api" in ep else ep
+                    check = requests.get(base_url, timeout=10)
+                    if check.status_code == 200:
+                        endpoint = ep
+                        break
+                except Exception:
+                    continue
+
+            if not endpoint:
+                logger.warning("No TikTok TTS endpoint available, retrying...")
+                continue
+
+            # 拆分文本并生成音频
+            chunks = _split_text(text, CHUNK_LIMIT) if len(text) > CHUNK_LIMIT else [text]
+            all_audio_b64 = []
+            for chunk in chunks:
+                b64_data = _call_endpoint(endpoint, chunk, voice_id)
+                if not b64_data or b64_data == "error":
+                    raise ValueError(f"TikTok TTS returned error for chunk: {chunk[:50]}...")
+                all_audio_b64.append(b64_data)
+
+            # 合并base64数据并写入文件
+            combined_b64 = "".join(all_audio_b64)
+            audio_bytes = base64.b64decode(combined_b64)
+            with open(voice_file, "wb") as f:
+                f.write(audio_bytes)
+
+            logger.success(f"tiktok tts succeeded: {voice_file}")
+            # 返回None：TikTok TTS不提供word-level时间戳
+            # 需要使用whisper作为subtitle_provider来生成字幕
+            return None
+
+        except Exception as e:
+            logger.error(f"tiktok tts failed: {str(e)}")
+
     return None
 
 

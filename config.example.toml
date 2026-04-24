@@ -31,6 +31,10 @@ pixabay_api_keys = []
 #   cloudflare
 #   ernie       (文心一言)
 #   modelscope  (魔搭社区)
+#   baichuan    (百川智能)
+#   tongyi      (通义千问 OpenAI兼容模式)
+#   qianfan     (百度千帆)
+#   kimi        (Kimi/月之暗面)
 llm_provider = "openai"
 
 ########## Pollinations AI Settings
@@ -108,9 +112,67 @@ modelscope_api_key = ""
 modelscope_base_url = "https://api-inference.modelscope.cn/v1/"
 modelscope_model_name = "Qwen/Qwen3-32B"
 
-# Subtitle Provider, "edge" or "whisper"
+########## Baichuan API Key (百川智能)
+# Visit https://platform.baichuan-ai.com/ to get your API key
+baichuan_api_key = ""
+baichuan_base_url = "https://api.baichuan-ai.com/v1"
+baichuan_model_name = "Baichuan3-Turbo"
+
+########## Tongyi API Key (通义千问 OpenAI兼容模式)
+# Visit https://dashscope.console.aliyun.com/ to get your API key
+# Uses the OpenAI-compatible endpoint (different from the qwen provider which uses the dashscope SDK)
+tongyi_api_key = ""
+tongyi_base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+tongyi_model_name = "qwen-turbo"
+
+########## Qianfan API Key (百度千帆)
+# Visit https://qianfan.cloud.baidu.com/ to get your API key
+qianfan_api_key = ""
+qianfan_base_url = "https://qianfan.baidubce.com/v2"
+qianfan_model_name = "ernie-4.0-8k"
+
+########## Kimi API Key
+# Visit https://platform.moonshot.cn/ to get your API key
+# Uses the same API endpoint as moonshot but with separate config
+kimi_api_key = ""
+kimi_base_url = "https://api.moonshot.cn/v1"
+kimi_model_name = "moonshot-v1-8k"
+
+# Subtitle Provider: "edge", "whisper", or "sensevoice"
 # If empty, the subtitle will not be generated
+# "sensevoice" requires: pip install sherpa-onnx
 subtitle_provider = "edge"
+
+########## Alibaba Cloud NLS TTS (阿里云语音合成)
+# Visit https://nls-portal.console.aliyun.com/ to get keys
+# Voice names start with "ali:" prefix, e.g. "ali:xiaoyun"
+ali_access_key_id = ""
+ali_access_key_secret = ""
+ali_app_key = ""
+
+########## Tencent Cloud TTS (腾讯云语音合成)
+# Visit https://console.cloud.tencent.com/tts to get keys
+# Voice names start with "tencent:" prefix, e.g. "tencent:1001"
+tencent_secret_id = ""
+tencent_secret_key = ""
+
+########## Local TTS Servers (本地TTS服务)
+# ChatTTS: https://github.com/2noise/ChatTTS
+# Voice names start with "chattts:" prefix
+chattts_server = "http://127.0.0.1:8080"
+
+# GPT-SoVITS: https://github.com/RVC-Boss/GPT-SoVITS
+# Voice names start with "gptsovits:" prefix
+gptsovits_server = "http://127.0.0.1:9880"
+
+# CosyVoice: https://github.com/FunAudioLLM/CosyVoice
+# Voice names start with "cosyvoice:" prefix
+cosyvoice_server = ""
+
+########## Stable Diffusion WebUI (AI图片生成作为视频素材)
+# Set video_source = "sd" in API request to use SD images
+# Requires AUTOMATIC1111 WebUI running with --api flag
+sd_server = ""  # e.g. http://127.0.0.1:7860
 
 #
 # ImageMagick

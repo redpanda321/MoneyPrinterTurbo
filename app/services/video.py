@@ -194,7 +194,12 @@ def combine_videos(
                     clip = CompositeVideoClip([background, clip_resized])
                     
             shuffle_side = random.choice(["left", "right", "top", "bottom"])
-            if video_transition_mode.value == VideoTransitionMode.none.value:
+            # Skip per-clip transitions for xfade modes (xfade is applied between clips during merge)
+            is_xfade_mode = (video_transition_mode and video_transition_mode.value
+                            and str(video_transition_mode.value).startswith("xfade:"))
+            if is_xfade_mode:
+                pass  # xfade transitions are applied during the merge step
+            elif video_transition_mode.value == VideoTransitionMode.none.value:
                 clip = clip
             elif video_transition_mode.value == VideoTransitionMode.fade_in.value:
                 clip = video_effects.fadein_transition(clip, 1)
@@ -253,7 +258,34 @@ def combine_videos(
         delete_files(processed_clips)
         logger.info("video combining completed")
         return combined_video_path
-    
+
+    # Check if xfade transition is requested
+    is_xfade_mode = (video_transition_mode and video_transition_mode.value
+                    and str(video_transition_mode.value).startswith("xfade:"))
+    if is_xfade_mode:
+        xfade_effect = str(video_transition_mode.value).split(":", 1)[1]
+        clip_files = [clip.file_path for clip in processed_clips]
+        logger.info(f"using ffmpeg xfade transition: {xfade_effect}")
+
+        ffmpeg_cmd = "ffmpeg"
+        ffmpeg_path = config.app.get("ffmpeg_path", "")
+        if ffmpeg_path:
+            ffmpeg_cmd = ffmpeg_path
+
+        success = video_effects.combine_clips_with_xfade(
+            clip_paths=clip_files,
+            output_path=combined_video_path,
+            effect=xfade_effect,
+            duration=1.0,
+            ffmpeg_cmd=ffmpeg_cmd,
+        )
+        if success:
+            delete_files(clip_files)
+            logger.info("video combining with xfade completed")
+            return combined_video_path
+        else:
+            logger.warning("xfade merge failed, falling back to simple concatenation")
+
     # create initial video file as base
     base_clip_path = processed_clips[0].file_path
     temp_merged_video = f"{output_dir}/temp-merged-video.mp4"
