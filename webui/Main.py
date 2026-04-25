@@ -66,6 +66,9 @@ if "video_terms" not in st.session_state:
     st.session_state["video_terms"] = ""
 if "ui_language" not in st.session_state:
     st.session_state["ui_language"] = config.ui.get("language", system_locale)
+if "local_video_materials" not in st.session_state:
+    # 记住用户最近一次已经落盘的本地素材，避免仅修改文案后二次生成时丢失素材列表。
+    st.session_state["local_video_materials"] = []
 
 # 加载语言文件
 locales = utils.load_locales(i18n_dir)
@@ -290,8 +293,8 @@ if not config.app.get("hide_config", False):
                             ##### OpenAI 配置说明
                             > 需要VPN开启全局流量模式
                             - **API Key**: [点击到官网申请](https://platform.openai.com/api-keys)
-                            - **Base Url**: 可以留空
-                            - **Model Name**: 填写**有权限**的模型，[点击查看模型列表](https://platform.openai.com/settings/organization/limits)
+                            - **Base Url**: 官方 OpenAI 可留空；如果使用 OpenAI 兼容供应商（例如 OpenRouter），请填写对应的兼容接口地址
+                            - **Model Name**: 填写**有权限**的模型；如果使用兼容供应商，请填写该平台支持的模型 ID
                             """
 
             if llm_provider == "moonshot":
@@ -579,9 +582,11 @@ with middle_panel:
         config.app["video_source"] = params.video_source
 
         if params.video_source == "local":
+            # Streamlit 的文件类型校验对扩展名大小写敏感，这里同时放行大小写两种形式。
+            local_file_types = ["mp4", "mov", "avi", "flv", "mkv", "jpg", "jpeg", "png"]
             uploaded_files = st.file_uploader(
                 "Upload Local Files",
-                type=["mp4", "mov", "avi", "flv", "mkv", "jpg", "jpeg", "png"],
+                type=local_file_types + [file_type.upper() for file_type in local_file_types],
                 accept_multiple_files=True,
             )
 
@@ -886,24 +891,34 @@ with right_panel:
             (tr("Bottom"), "bottom"),
             (tr("Custom"), "custom"),
         ]
+        saved_subtitle_position = config.ui.get("subtitle_position", "bottom")
+        saved_position_index = 2
+        for i, (_, pos_value) in enumerate(subtitle_positions):
+            if pos_value == saved_subtitle_position:
+                saved_position_index = i
+                break
         selected_index = st.selectbox(
             tr("Position"),
-            index=2,
+            index=saved_position_index,
             options=range(len(subtitle_positions)),
             format_func=lambda x: subtitle_positions[x][0],
         )
         params.subtitle_position = subtitle_positions[selected_index][1]
+        config.ui["subtitle_position"] = params.subtitle_position
 
         if params.subtitle_position == "custom":
+            saved_custom_position = config.ui.get("custom_position", 70.0)
             custom_position = st.text_input(
                 tr("Custom Position (% from top)"),
-                value="70.0",
+                value=str(saved_custom_position),
                 key="custom_position_input",
             )
             try:
                 params.custom_position = float(custom_position)
                 if params.custom_position < 0 or params.custom_position > 100:
                     st.error(tr("Please enter a value between 0 and 100"))
+                else:
+                    config.ui["custom_position"] = params.custom_position
             except ValueError:
                 st.error(tr("Please enter a valid number"))
 
@@ -1015,6 +1030,9 @@ if start_button:
 
     if uploaded_files:
         local_videos_dir = utils.storage_dir("local_videos", create=True)
+        # 每次重新上传时都以本次选择的素材为准，避免旧素材不断重复追加。
+        params.video_materials = []
+        persisted_local_materials = []
         for file in uploaded_files:
             file_path = os.path.join(local_videos_dir, f"{file.file_id}_{file.name}")
             with open(file_path, "wb") as f:
@@ -1022,8 +1040,25 @@ if start_button:
                 m = MaterialInfo()
                 m.provider = "local"
                 m.url = file_path
-                if not params.video_materials:
-                    params.video_materials = []
+                params.video_materials.append(m)
+                persisted_local_materials.append(
+                    {
+                        "provider": m.provider,
+                        "url": m.url,
+                        "duration": m.duration,
+                    }
+                )
+        # 将已上传并保存到本地的视频素材写入会话，供后续只改文案时直接复用。
+        st.session_state["local_video_materials"] = persisted_local_materials
+    elif params.video_source == "local" and st.session_state["local_video_materials"]:
+        # 当用户没有重新上传文件时，复用最近一次已经保存到磁盘的本地素材列表。
+        params.video_materials = []
+        for material in st.session_state["local_video_materials"]:
+            m = MaterialInfo()
+            m.provider = material.get("provider", "local")
+            m.url = material.get("url", "")
+            m.duration = material.get("duration", 0)
+            if m.url:
                 params.video_materials.append(m)
 
     log_container = st.empty()

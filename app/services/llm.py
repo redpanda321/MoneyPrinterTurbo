@@ -12,6 +12,45 @@ from openai.types.chat import ChatCompletion
 from app.config import config
 
 _max_retries = 5
+_DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+_DEPRECATED_GEMINI_MODELS = {"gemini-pro", "gemini-1.0-pro"}
+
+
+def _normalize_text_response(content, llm_provider: str) -> str:
+    # 不同 LLM SDK 在异常或被拦截场景下，可能返回 None、空字符串，
+    # 甚至返回非字符串对象。这里统一做兜底校验，避免后续直接调用
+    # `.replace()` 时抛出 `NoneType` 之类的属性错误。
+    if content is None:
+        raise ValueError(f"[{llm_provider}] returned empty text content")
+
+    if not isinstance(content, str):
+        raise TypeError(
+            f"[{llm_provider}] returned non-text content: {type(content).__name__}"
+        )
+
+    content = content.strip()
+    if not content:
+        raise ValueError(f"[{llm_provider}] returned empty text content")
+
+    return content.replace("\n", "")
+
+
+def _extract_chat_completion_text(response, llm_provider: str) -> str:
+    # OpenAI 兼容接口在异常场景下，可能返回没有 choices、
+    # 或者 choices/message/content 为空的响应对象。
+    # 这里统一做结构校验，避免出现 `NoneType is not subscriptable`
+    # 这类底层属性访问错误。
+    choices = getattr(response, "choices", None)
+    if not choices:
+        raise ValueError(f"[{llm_provider}] returned empty choices")
+
+    first_choice = choices[0]
+    message = getattr(first_choice, "message", None)
+    if message is None:
+        raise ValueError(f"[{llm_provider}] returned empty message")
+
+    content = getattr(message, "content", None)
+    return _normalize_text_response(content, llm_provider)
 
 
 def _generate_response(prompt: str) -> str:
@@ -59,6 +98,15 @@ def _generate_response(prompt: str) -> str:
                 api_key = config.app.get("gemini_api_key")
                 model_name = config.app.get("gemini_model_name")
                 base_url = config.app.get("gemini_base_url", "")
+                # Gemini 旧模型名已经陆续下线，这里自动兼容历史配置，
+                # 避免用户沿用旧值时直接收到 404。
+                if not model_name:
+                    model_name = _DEFAULT_GEMINI_MODEL
+                elif model_name in _DEPRECATED_GEMINI_MODELS:
+                    logger.warning(
+                        f"gemini model '{model_name}' is deprecated, fallback to '{_DEFAULT_GEMINI_MODEL}'"
+                    )
+                    model_name = _DEFAULT_GEMINI_MODEL
             elif llm_provider == "qwen":
                 api_key = config.app.get("qwen_api_key")
                 model_name = config.app.get("qwen_model_name")
@@ -68,6 +116,12 @@ def _generate_response(prompt: str) -> str:
                 model_name = config.app.get("cloudflare_model_name")
                 account_id = config.app.get("cloudflare_account_id")
                 base_url = "***"
+            elif llm_provider == "minimax":
+                api_key = config.app.get("minimax_api_key")
+                model_name = config.app.get("minimax_model_name")
+                base_url = config.app.get("minimax_base_url", "")
+                if not base_url:
+                    base_url = "https://api.minimax.io/v1"
             elif llm_provider == "deepseek":
                 api_key = config.app.get("deepseek_api_key")
                 model_name = config.app.get("deepseek_model_name")
@@ -146,7 +200,7 @@ def _generate_response(prompt: str) -> str:
                     
                     if result and "choices" in result and len(result["choices"]) > 0:
                         content = result["choices"][0]["message"]["content"]
-                        return content.replace("\n", "")
+                        return _normalize_text_response(content, llm_provider)
                     else:
                         raise Exception(f"[{llm_provider}] returned an invalid response format")
                         
@@ -164,7 +218,7 @@ def _generate_response(prompt: str) -> str:
                     raise ValueError(
                         f"{llm_provider}: model_name is not set, please set it in the config.toml file."
                     )
-                if not base_url:
+                if not base_url and llm_provider not in ["gemini"]:
                     raise ValueError(
                         f"{llm_provider}: base_url is not set, please set it in the config.toml file."
                     )
@@ -240,8 +294,9 @@ def _generate_response(prompt: str) -> str:
                     generated_text = candidates[0].content.parts[0].text
                 except (AttributeError, IndexError) as e:
                     print("Gemini Error:", e)
+                    raise ValueError(f"[{llm_provider}] returned invalid response content")
 
-                return generated_text
+                return _normalize_text_response(generated_text, llm_provider)
 
             if llm_provider == "cloudflare":
                 response = requests.post(
@@ -259,7 +314,7 @@ def _generate_response(prompt: str) -> str:
                 )
                 result = response.json()
                 logger.info(result)
-                return result["result"]["response"]
+                return _normalize_text_response(result["result"]["response"], llm_provider)
 
             if llm_provider == "ernie":
                 response = requests.post(
@@ -289,7 +344,7 @@ def _generate_response(prompt: str) -> str:
                 response = requests.request(
                     "POST", url, headers=headers, data=payload
                 ).json()
-                return response.get("result")
+                return _normalize_text_response(response.get("result"), llm_provider)
 
             if llm_provider == "azure":
                 client = AzureOpenAI(
@@ -321,7 +376,7 @@ def _generate_response(prompt: str) -> str:
                     if not content.strip():
                         raise ValueError("Empty content in stream response")
                     
-                    return content.replace("\n", "")
+                    return _normalize_text_response(content, llm_provider)
                 else:
                     raise Exception(f"[{llm_provider}] returned an empty response")
 
@@ -336,7 +391,7 @@ def _generate_response(prompt: str) -> str:
             )
             if response:
                 if isinstance(response, ChatCompletion):
-                    content = response.choices[0].message.content
+                    return _extract_chat_completion_text(response, llm_provider)
                 else:
                     raise Exception(
                         f'[{llm_provider}] returned an invalid response: "{response}", please check your network '
@@ -347,7 +402,7 @@ def _generate_response(prompt: str) -> str:
                     f"[{llm_provider}] returned an empty response, please check your network connection and try again."
                 )
 
-        return content.replace("\n", "")
+        return _normalize_text_response(content, llm_provider)
     except Exception as e:
         return f"Error: {str(e)}"
 

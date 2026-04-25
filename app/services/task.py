@@ -8,7 +8,7 @@ from loguru import logger
 from app.config import config
 from app.models import const
 from app.models.schema import VideoConcatMode, VideoParams
-from app.services import llm, material, subtitle, video, voice
+from app.services import llm, material, subtitle, video, voice, upload_post
 from app.services import state as sm
 from app.utils import utils
 
@@ -82,7 +82,9 @@ def generate_audio(task_id, params, video_script):
         - sub_maker: subtitle maker object if TTS is used, None otherwise
     '''
     logger.info("\n\n## generating audio")
-    custom_audio_file = params.custom_audio_file
+    # /audio 和 /subtitle 请求模型不包含 custom_audio_file，
+    # 这里统一做兼容读取，避免直调接口时抛属性错误。
+    custom_audio_file = getattr(params, "custom_audio_file", None)
     if not custom_audio_file or not os.path.exists(custom_audio_file):
         if custom_audio_file:
             logger.warning(
@@ -252,9 +254,6 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.info(f"start task: {task_id}, stop_at: {stop_at}")
     sm.state.update_task(task_id, state=const.TASK_STATE_PROCESSING, progress=5)
 
-    if type(params.video_concat_mode) is str:
-        params.video_concat_mode = VideoConcatMode(params.video_concat_mode)
-
     # 1. Generate script
     video_script = generate_script(task_id, params)
     if not video_script or "Error: " in video_script:
@@ -341,6 +340,11 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
 
     sm.state.update_task(task_id, state=const.TASK_STATE_PROCESSING, progress=50)
 
+    # 仅完整视频生成流程才需要处理视频拼接模式；
+    # 这样可以避免 /subtitle 和 /audio 这类请求访问不存在的字段。
+    if type(params.video_concat_mode) is str:
+        params.video_concat_mode = VideoConcatMode(params.video_concat_mode)
+
     # 6. Generate final videos
     final_video_paths, combined_video_paths = generate_final_videos(
         task_id, params, downloaded_videos, audio_file, subtitle_path
@@ -353,6 +357,8 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.success(
         f"task {task_id} finished, generated {len(final_video_paths)} videos."
     )
+
+    cross_post_results = []
 
     # 7. Optional YouTube upload
     if getattr(params, "youtube_upload", False):
@@ -372,6 +378,20 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
             except Exception as e:
                 logger.error(f"YouTube upload failed: {str(e)}")
 
+    # 8. Cross-post to TikTok/Instagram (if enabled)
+    if upload_post.upload_post_service.is_configured() and upload_post.upload_post_service.auto_upload:
+        logger.info("\n\n## cross-posting videos to TikTok/Instagram")
+        for video_path in final_video_paths:
+            result = upload_post.cross_post_video(
+                video_path=video_path,
+                title=params.video_subject or "Check out this video! #shorts #viral"
+            )
+            cross_post_results.append(result)
+            if result.get('success'):
+                logger.info(f"Cross-posted: {video_path}")
+            else:
+                logger.warning(f"Failed to cross-post: {video_path} - {result.get('error', 'Unknown error')}")
+
     kwargs = {
         "videos": final_video_paths,
         "combined_videos": combined_video_paths,
@@ -381,6 +401,7 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         "audio_duration": audio_duration,
         "subtitle_path": subtitle_path,
         "materials": downloaded_videos,
+        "cross_post_results": cross_post_results if cross_post_results else None,
     }
     sm.state.update_task(
         task_id, state=const.TASK_STATE_COMPLETE, progress=100, **kwargs
